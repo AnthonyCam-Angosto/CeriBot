@@ -5,7 +5,7 @@ from chatbot import chat
 app_Router = Blueprint('index',__name__)
 
 client=chat.start()
-chat=chat.create_chat(client)
+chatbot=chat.create_chat(client)
 
 
 
@@ -18,7 +18,7 @@ def json():
     values=request.get_json()
     if(values.__contains__("requete")):
         requete=values["requete"]
-        reponse=chat.run(chat,requete)
+        reponse=chat.run(chatbot,requete)
 
         
         return jsonify({"reponse":reponse})
