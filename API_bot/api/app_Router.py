@@ -8,7 +8,6 @@ client=chat.start()
 chatbot=chat.create_chat(client)
 
 
-
 @app_Router.route("/")
 def page():
     return render_template("index.html")
@@ -24,3 +23,16 @@ def json():
         return jsonify({"reponse":reponse})
     else:
         return "error"
+
+@app_Router.route("/speech", methods=["POST"])
+def transcribe():
+    req_data = request.get_json(force=True)
+
+    # collect the transcription
+    result_from_google = speechRecognition(req_data['data'], req_data['params'])
+
+    print(result_from_google)
+    # send back the predicted keyword in json format
+    reply = {"sentence": result_from_google}
+
+    return jsonify(reply)
