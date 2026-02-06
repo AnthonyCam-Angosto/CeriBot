@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, render_template, request
 
 from chatbot import chat
+from speech.speech import speechRecognition
 
 app_Router = Blueprint('index',__name__)
 

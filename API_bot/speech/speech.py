@@ -11,7 +11,7 @@ def speechRecognition(data, params):
     params = base64.b64decode(params)
     params = literal_eval(params.decode("utf-8"))
 
-    wave_write = wave.open(audioFileName, "w")
+    wave_write = wave.open(audioFileName, "wb")
     wave_write.setparams(params)
     wave_write.writeframes(data)
     wave_write.close()
