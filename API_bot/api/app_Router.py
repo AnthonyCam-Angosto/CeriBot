@@ -18,12 +18,13 @@ def json():
     values=request.get_json()
     if(values.__contains__("requete")):
         requete=values["requete"]
-        if requete=='au revoir':
-            return jsonify({"reponse":1})
 
         reponse=chat.run(chatbot,requete)
+
+        if requete=='au revoir':
+            return jsonify({"reponse":reponse,"fin":True})
     
-        return jsonify({"reponse":reponse})
+        return jsonify({"reponse":reponse,"fin":False})
     else:
         return "error"
 

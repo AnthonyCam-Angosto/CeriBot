@@ -27,14 +27,14 @@ class MyClass(GeneratedClass):
         raw=response.read()
         data = json.loads(raw.decode("utf-8"))
 
-        result=data.get("val")
+        result=data.get("reponse")
         result=result.encode("utf-8")
 
         self.logger.info("resultat:"+str(type(result)))
         self.logger.info(result)
 
 
-        if(result==1):
+        if(data.get("fin")==True):
             self.fin(result)
         else:
             self.output(result) #activate the output of the box
