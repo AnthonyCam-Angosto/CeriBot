@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta  />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Evaluate CERI_Bot</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='CSS/acceuil.css') }}" />
+  <style>
+    /* Compact, self-contained styles for the star widget */
+    .rating-page {
+      min-height: 70vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      gap: 20px;
+      flex-direction: column;
+      color: #fff;
+    }
+
+    .rating-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.04);
+      padding: 22px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 720px;
+      width: 95%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .rating-title { margin: 0 0 6px 0; font-size: 1.3rem; }
+    .rating-desc { margin: 0 0 16px 0; color: #bfcfe0; }
+
+    /* Stars row */
+    .stars {
+      display: inline-flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .star {
+      --size: 56px;
+      width: var(--size);
+      height: var(--size);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+      color: #9aa8bd; /* empty color */
+    }
+
+    .star:hover { transform: translateY(-6px); box-shadow: 0 10px 30px rgba(2,6,23,0.6); }
+    .star:focus { outline: 3px solid rgba(96,165,250,0.18); }
+
+    /* filled (selected) stars */
+    .star.filled { color: #ffd166; /* gold */ }
+
+    /* smaller stars on mobile */
+    @media (max-width: 520px) {
+      .star { --size: 44px; }
+    }
+
+    .feedback {
+      min-height: 1.2em;
+      color: #e6eef6;
+      font-weight: 600;
+    }
+
+    .submit-row { margin-top: 14px; display:flex; gap:10px; justify-content:center; }
+    .btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.04);
+      color: #e6eef6;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .btn.primary { background: linear-gradient(90deg,#FFD166,#FFB84D); color:#1a0f00; border:none; }
+  </style>
+</head>
+<body>
+  <main class="rating-page" role="main">
+    <section class="rating-card" aria-labelledby="ratingHeading">
+      <h1 id="ratingHeading" class="rating-title">Rate the communication with the robot</h1>
+      <p class="rating-desc">Tap or press a star (1-5). You can also use number keys or arrow keys.</p>
+
+      <div id="starGroup" class="stars" role="radiogroup" aria-label="Rating" tabindex="0">
+        <button class="star" role="radio" aria-checked="false" data-value="1" aria-label="1 star">
+          <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true" focusable="false">
+            <path d="M12 .587l3.668 7.431L24 9.748l-6 5.858L19.335 24 12 19.9 4.665 24 6 15.606 0 9.748l8.332-1.73z" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="star" role="radio" aria-checked="false" data-value="2" aria-label="2 stars">
+          <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true" focusable="false">
+            <path d="M12 .587l3.668 7.431L24 9.748l-6 5.858L19.335 24 12 19.9 4.665 24 6 15.606 0 9.748l8.332-1.73z" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="star" role="radio" aria-checked="false" data-value="3" aria-label="3 stars">
+          <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true" focusable="false">
+            <path d="M12 .587l3.668 7.431L24 9.748l-6 5.858L19.335 24 12 19.9 4.665 24 6 15.606 0 9.748l8.332-1.73z" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="star" role="radio" aria-checked="false" data-value="4" aria-label="4 stars">
+          <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true" focusable="false">
+            <path d="M12 .587l3.668 7.431L24 9.748l-6 5.858L19.335 24 12 19.9 4.665 24 6 15.606 0 9.748l8.332-1.73z" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="star" role="radio" aria-checked="false" data-value="5" aria-label="5 stars">
+          <svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true" focusable="false">
+            <path d="M12 .587l3.668 7.431L24 9.748l-6 5.858L19.335 24 12 19.9 4.665 24 6 15.606 0 9.748l8.332-1.73z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="feedback" class="feedback" aria-live="polite">No rating yet</div>
+
+      <div class="submit-row">
+        <button id="submitBtn" class="btn primary">Submit</button>
+        <button id="clearBtn" class="btn">Clear</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="text/javascript" src="{{ url_for('static', filename='JS/evaluation.js') }}"></script>
+</body>
+</html>

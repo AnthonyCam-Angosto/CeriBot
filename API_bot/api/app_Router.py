@@ -11,7 +11,7 @@ chatbot=chat.create_chat(client)
 
 @app_Router.route("/")
 def page():
-    return render_template("index.html")
+    return render_template("evaluation.html")
 
 @app_Router.route("/chat", methods=['POST'])
 def json():
