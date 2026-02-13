@@ -15,6 +15,7 @@ class MyClass(GeneratedClass):
         pass
 
     def onInput_onStart(self,m):
+        tts = ALProxy("ALTextToSpeech", "127.0.0.1", 9559)
         content={"requete":m}
         json_data = json.dumps(content)
 
@@ -23,16 +24,20 @@ class MyClass(GeneratedClass):
         req.add_header("Accept", "application/json")
 
         response=urllib2.urlopen(req)
-        data = json.loads(response.read())
-        result=data.get("reponse")
-        self.logger.info("resultat:"+str(result))
+        raw=response.read()
+        data = json.loads(raw.decode("utf-8"))
+
+        result=data.get("val")
+        result=result.encode("utf-8")
+
         self.logger.info("resultat:"+str(type(result)))
+        self.logger.info(result)
 
 
         if(result==1):
-            self.fin(str(result))
+            self.fin(result)
         else:
-            self.output(str(result)) #activate the output of the box
+            self.output(result) #activate the output of the box
 
     def onInput_onStop(self):
         self.onUnload() #it is recommended to reuse the clean-up as the box is stopped
