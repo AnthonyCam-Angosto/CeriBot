@@ -1,5 +1,5 @@
 def declaration():
-    return [visualiser_planning_formation,recherche_salle_disponnible,]
+    return [visualiser_planning_formation,recherche_salle_disponnible,meteo_du_jour]
 
 visualiser_planning_formation = {
     "name": "visualiser_planning_formation",
@@ -60,3 +60,21 @@ recherche_salle_disponnible = {
         }
     }
 }
+
+meteo_du_jour = {
+    "name": "meteo_du_jour",
+    "description": "Affiche la météo du jour pour une ville donnée.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "ville": {
+                "type": "string",
+                "description": "Le nom de la ville pour laquelle afficher la météo."
+            }
+        },
+        "required": ["ville"]
+    }
+}
+
+
+
