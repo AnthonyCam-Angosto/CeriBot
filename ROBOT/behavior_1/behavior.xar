@@ -5,6 +5,7 @@ class MyClass(GeneratedClass):
     def __init__(self):
         GeneratedClass.__init__(self)
         self.url="http://10.126.1.66:5000/chat"
+        self.nom=None
 
     def onLoad(self):
         #put initialization code here
@@ -16,7 +17,11 @@ class MyClass(GeneratedClass):
 
     def onInput_onStart(self,m):
         tts = ALProxy("ALTextToSpeech", "127.0.0.1", 9559)
-        content={"requete":m}
+        if(self.nom!=None):
+            content={"requete":"tu connait deja l'utilisateur c'est "+self.nom+". est son identité est déjà verifier. voici son message:"+m}
+            self.nom=None
+        else:
+            content={"requete":m}
         json_data = json.dumps(content)
 
         req=urllib2.Request(self.url,data=json_data)
