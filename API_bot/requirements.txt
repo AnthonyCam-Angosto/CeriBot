@@ -1,0 +1,5 @@
+flask
+google-genai
+SpeechRecognition
+requests
+ics
