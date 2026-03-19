@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<package uuid="robot-530ee7" version="0.0.0">
+<package version="0.0.0" uuid="robot-530ee7">
  <names>
   <name lang="en_US">Untitled</name>
  </names>
@@ -11,14 +11,5 @@
   <language>en_US</language>
   <language>fr_FR</language>
  </descriptionLanguages>
- <contents>
-  <behaviorContent path="behavior_1">
-   <userRequestable/>
-   <nature>solitary</nature>
-   <triggerSentences/>
-   <loadingResponses/>
-   <autonomous/>
-   <permissions/>
-  </behaviorContent>
- </contents>
+ <contents/>
 </package>
