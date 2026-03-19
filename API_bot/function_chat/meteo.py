@@ -119,4 +119,4 @@ def meteo_jour(ville: str):
 
 
 if __name__ == "__main__":
-    print(meteo_jour("montauroux"))
+    print(meteo_jour("avignon"))

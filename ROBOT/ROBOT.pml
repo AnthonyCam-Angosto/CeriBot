@@ -5,9 +5,7 @@
         <BehaviorDescription name="behavior" src="behavior_1" xar="behavior.xar" />
     </BehaviorDescriptions>
     <Dialogs />
-    <Resources>
-        <File name="golf" src="behavior_1/golf.ogg" />
-    </Resources>
+    <Resources />
     <Topics />
     <IgnoredPaths />
     <Translations auto-fill="en_US">

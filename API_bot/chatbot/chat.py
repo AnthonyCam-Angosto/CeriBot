@@ -14,6 +14,8 @@ def create_chat(client:genai.Client):
     config=types.GenerateContentConfig(tools=[tool])
 
     chat=client.chats.create(model="gemini-2.5-flash-lite",config=config)
+    chat.send_message("Réponds uniquement par une phrase courte destinée à être prononcée par un robot d’accueil universitaire. Ne produis rien d’autre. ")
+
     return chat
 
 
@@ -67,7 +69,8 @@ def traitement_reponse(chat,response,verifier_carte=False):
                     filiere=function_call.args.get("filiere",""),
                     type_formation=function_call.args.get("type_formation",""),
                     niveau_etudes=function_call.args.get("niveau_etudes",0),
-                    mode_etudes=function_call.args.get("mode_etudes","")
+                    mode_etudes=function_call.args.get("mode_etudes",""),
+                    groupe_td=function_call.args.get("groupe td","")
                 )
             case "meteo_du_jour":
                 result=meteo.meteo_jour(function_call.args.get("ville",""))
@@ -80,7 +83,3 @@ def traitement_reponse(chat,response,verifier_carte=False):
         return final_response,False
     else:
         return response,False
-
-if __name__=="__main__":
-    chat=start()
-    run(chat, "Bonjour")
