@@ -32,6 +32,10 @@ visualiser_planning_formation = {
           "type":"string",
           "enum":["classic","alternance"],
           "description":"le mode d'etude qui soit classic ou alternance"
+      },
+      "groupe td":{
+          "type":"string",
+          "description":"le groupe de td pour lequel visualiser le planning (ex: Gr1,Gr2,etc.)"
       }
     },
   }

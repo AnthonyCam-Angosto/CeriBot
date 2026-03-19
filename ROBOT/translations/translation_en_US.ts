@@ -30,10 +30,17 @@
             <translation type="obsolete">qu'elle est votre nom</translation>
         </message>
         <message>
-            <location filename="behavior_1/behavior.xar" line="0"/>
             <source>erreur durant l'apprentissage du visage</source>
             <comment>Text</comment>
-            <translation type="unfinished">erreur durant l'apprentissage du visage</translation>
+            <translation type="obsolete">erreur durant l'apprentissage du visage</translation>
+        </message>
+    </context>
+    <context>
+        <name>behavior_1/behavior.xar:/security/learn_face/Say</name>
+        <message>
+            <source>erreur durant l'apprentissage du visage</source>
+            <comment>Text</comment>
+            <translation type="obsolete">erreur durant l'apprentissage du visage</translation>
         </message>
     </context>
 </TS>

@@ -59,7 +59,7 @@ def _filtre_filiere(filiere: str) -> list[str]:
     return correspondances.get((filiere or "").lower(), [])
 
 
-def visualiser_planning_formation(date, filiere, type_formation, niveau_etudes, mode_etudes):
+def visualiser_planning_formation(date, filiere, type_formation, niveau_etudes, mode_etudes, groupe_td):
     db_path = Path(__file__).resolve().parents[1] / "calendars.db"
     if not db_path.exists():
         return {"erreur": "Base de planning introuvable (calendars.db)."}
@@ -87,21 +87,25 @@ def visualiser_planning_formation(date, filiere, type_formation, niveau_etudes, 
     if mots_cles_filiere:
         or_parts = []
         for mot_cle in mots_cles_filiere:
-            or_parts.append("LOWER(COALESCE(formation, '')) LIKE ?")
+            or_parts.append("formation LIKE ?")
             params.append(f"%{mot_cle.lower()}%")
         where_clauses.append("(" + " OR ".join(or_parts) + ")")
 
     if formation_prefix:
-        where_clauses.append("LOWER(COALESCE(formation, '')) LIKE ?")
+        where_clauses.append("formation LIKE ?")
         params.append(f"%{formation_prefix.lower()}%")
 
     mode_norm = (mode_etudes or "").strip().lower()
     if mode_norm == "classic":
-        where_clauses.append("LOWER(COALESCE(td_group, '')) LIKE ?")
+        where_clauses.append("td_group LIKE ?")
         params.append("%cla%")
     elif mode_norm == "alternance":
-        where_clauses.append("LOWER(COALESCE(td_group, '')) LIKE ?")
+        where_clauses.append("td_group LIKE ?")
         params.append("%alt%")
+    
+    if groupe_td:
+        where_clauses.append("td_group LIKE ?")
+        params.append(f"%{groupe_td.strip().lower()}%")
 
     requete = f"""
         SELECT
@@ -134,6 +138,7 @@ def visualiser_planning_formation(date, filiere, type_formation, niveau_etudes, 
         return {
             "date": date_affichee,
             "formation": f"{type_formation} {niveau_etudes} - {filiere} ({mode_etudes})",
+            "groupe_td": groupe_td,
             "results": [],
             "message": "Aucun cours trouvé pour ces critères.",
         }
@@ -159,7 +164,10 @@ def visualiser_planning_formation(date, filiere, type_formation, niveau_etudes, 
     return {
         "date": date_affichee,
         "formation": f"{type_formation} {niveau_etudes} - {filiere} ({mode_etudes})",
+        "groupe_td": groupe_td,
         "results": results,
         "message": f"{len(results)} cours trouvé(s).",
     }
-    
+
+if __name__ == "__main__":
+    print(visualiser_planning_formation("11-03", "ilsen", "Master", "1", "classic", "Gr1"))
