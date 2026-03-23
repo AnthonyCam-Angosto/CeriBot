@@ -13,7 +13,7 @@ def init_socketio(socketio_instance):
     socketio = socketio_instance
 
 client=chat.start()
-chatbot=chat.create_chat(client)
+#chatbot=chat.create_chat(client)
 
 carte_verifier=False
 path_page="index.html"
