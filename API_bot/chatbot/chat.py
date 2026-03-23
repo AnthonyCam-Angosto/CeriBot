@@ -1,9 +1,13 @@
 from google import genai
 from google.genai import types
+from api import app_Router
 from chatbot.declaration_funct import declaration
-from function_chat import emploi_temp, meteo
+from function_chat import emplacement_salle, emploi_temp, meteo, salle_dispo
+import time
 
-FONCTION_SECURISER = {"recherche_salle_disponnible", "visualiser_planning_formation"}
+FONCTION_SECURISER = {"recherche_salle_disponnible", "visualiser_planning_formation", "emplacement_salle"}
+MAX_RETRIES = 3
+RETRY_DELAY = 2  # secondes
 
 def start():
     client = genai.Client(api_key="AIzaSyBJB3W8xOQL7umAXOq61dvzJ9436rqPWHI")
@@ -20,9 +24,7 @@ def create_chat(client:genai.Client):
 
 
 
-def run(chat,requete,verifier_carte=False):
-    #while True:
-        #requete=input("ecrire votre requete: ")
+def run(chat, requete, verifier_carte=False):
     etat_carte = "verifiee" if verifier_carte else "non_verifiee"
     message_chat = (
         f"{requete}\n\n"
@@ -30,11 +32,20 @@ def run(chat,requete,verifier_carte=False):
         "Les fonctions liees a l'ecole (planning, salle) ne sont autorisees que si la carte est verifiee."
     )
 
-    response=chat.send_message(message_chat)
-    response,notverify = traitement_reponse(chat,response,verifier_carte)
-
-    print(response.text)
-    return response.text,notverify
+    # Retry logic pour gérer les erreurs serveur
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = chat.send_message(message_chat)
+            response, notverify = traitement_reponse(chat, response, verifier_carte)
+            print(response.text)
+            return response.text, notverify
+        except Exception as e:
+            print(f"Erreur tentative {attempt + 1}/{MAX_RETRIES}: {str(e)}")
+            if attempt < MAX_RETRIES - 1:
+                print(f"Nouvelle tentative dans {RETRY_DELAY} secondes...")
+                time.sleep(RETRY_DELAY)
+            else:
+                return "Désolé, le serveur est actuellement indisponible. Veuillez réessayer dans quelques instants.", False
 
 
 def traitement_reponse(chat,response,verifier_carte=False):
@@ -52,17 +63,11 @@ def traitement_reponse(chat,response,verifier_carte=False):
 
         match function_call.name:
             case "recherche_salle_disponnible":
-                result={
-                        "result":[{
-                            "libelle":"c130",
-                            "capacite":"30"
-                        },
-                        {
-                            "libelle":"c135",
-                            "capacite":"26"
-                        }
-                        ]
-                    }
+                result=salle_dispo.recherche_salle_disponnible(
+                    date=function_call.args.get("date",""),
+                    heure_debut=function_call.args.get("heure de debut",""),
+                    temps_utilisation=function_call.args.get("temps d'utilisation de la salle","")
+                )
             case "visualiser_planning_formation":
                 result=emploi_temp.visualiser_planning_formation(
                     date=function_call.args.get("date",""),
@@ -72,8 +77,19 @@ def traitement_reponse(chat,response,verifier_carte=False):
                     mode_etudes=function_call.args.get("mode_etudes",""),
                     groupe_td=function_call.args.get("groupe td","")
                 )
+                app_Router.info_planning(
+                    date=function_call.args.get("date",""),
+                    filiere=function_call.args.get("filiere",""),
+                    type_formation=function_call.args.get("type_formation",""),
+                    niveau_etudes=function_call.args.get("niveau_etudes",0),
+                    mode_etudes=function_call.args.get("mode_etudes",""),
+                    groupe_td=function_call.args.get("groupe td","")
+                )
             case "meteo_du_jour":
                 result=meteo.meteo_jour(function_call.args.get("ville",""))
+            
+            case "emplacement_salle":
+                result=emplacement_salle.emplacement_salle(function_call.args.get("salle",""))
 
             case _:
                 result={"erreur": f"Fonction inconnue: {function_call.name}"}

@@ -3,6 +3,7 @@
 <head>
     <title>CERI_Bot</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='CSS/acceuil.css') }}" />
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 
 <body>
@@ -14,6 +15,13 @@
     </div>
     
 </body>
+<script>
+var socket = io();
 
-<script type="text/javascript" src="{{ url_for('static', filename='JS/acceuil.js')}}"></script>
+socket.on('change_page', function(data) {
+  if (data === 'reload') {
+    location.reload();
+  }
+});
+</script>
 </html>

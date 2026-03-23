@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <!-- Viewport Pepper: 1 CSS pixel = 1 pixel physique tablette -->
   <meta name="viewport" content="width=746, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <title>Évaluation</title>
   <style>
     * {
@@ -172,6 +173,14 @@
   </div>
 
   <script>
+    var socket = io();
+
+    socket.on('change_page', function(data) {
+      if (data === 'reload') {
+        location.reload();
+      }
+    });
+
     // === ES5 pur — compatible WebView Android ancien ===
     var currentRating = 5; // démarre à 5 étoiles dorées
 

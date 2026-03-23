@@ -1,13 +1,13 @@
 import re
 import sqlite3
+from datetime import date, datetime, time
+from zoneinfo import ZoneInfo
 
 import requests
-from ics import Calendar
+from icalendar import Calendar
 
 DB_PATH = "calendars.db"
-URLS = [
-    "https://edt-api.univ-avignon.fr/api/exportAgenda/tdoption/def502005fbe64ad4610b919d8191570b6c3cc4500ac9247311377896afefdeb0abd3fafc90321830441bbd67e69bea7afad656309d296ed573d6b731ca7e405d3cc1ce29fb6afa26369a99642c1598f7dcda542a14f0806026930d1a1"
-]
+LOCAL_TIMEZONE = ZoneInfo("Europe/Paris")
 
 
 def unfold_ics_lines(ics_text: str) -> str:
@@ -32,10 +32,8 @@ def extract_meta_from_ics(ics_text: str) -> dict:
     group_match = re.search(r"\b(?:[A-Z0-9]+-){1,}[A-Za-z0-9]+-Gr\d+\b", cal_name)
     td_group = group_match.group(0).strip() if group_match else ""
 
-    calendar_name = cal_name or "univ_avignon"
 
     return {
-        "calendar_name": calendar_name,
         "formation": formation,
         "td_group": td_group,
     }
@@ -70,6 +68,30 @@ def parse_description(description: str | None) -> dict:
     return fields
 
 
+def to_local_datetime_text(value) -> str:
+    """Convertit une date ICS en heure locale Europe/Paris (sans timezone dans le texte stocké)."""
+    if value is None:
+        return ""
+
+    if hasattr(value, "to") and hasattr(value, "datetime"):
+        dt = value.to("Europe/Paris").datetime
+    elif hasattr(value, "datetime"):
+        dt = value.datetime
+    elif isinstance(value, date) and not isinstance(value, datetime):
+        dt = datetime.combine(value, time.min)
+    elif isinstance(value, datetime):
+        dt = value
+    else:
+        return str(value)
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=LOCAL_TIMEZONE)
+    else:
+        dt = dt.astimezone(LOCAL_TIMEZONE)
+
+    return dt.replace(tzinfo=None).isoformat(sep=" ")
+
+
 def ensure_schema(conn: sqlite3.Connection) -> None:
     cur = conn.cursor()
     cur.execute(
@@ -82,14 +104,12 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             dtend TEXT,
             description TEXT,
             location TEXT,
-            calendar_name TEXT,
-            source_url TEXT,
             formation TEXT,
             td_group TEXT,
             matiere TEXT,
             enseignant TEXT,
             type_cours TEXT,
-            UNIQUE(uid, calendar_name)
+            UNIQUE(uid)
         )
         """
     )
@@ -97,7 +117,6 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     cur.execute("PRAGMA table_info(events)")
     existing_columns = {row[1] for row in cur.fetchall()}
     required_columns = {
-        "source_url": "TEXT",
         "formation": "TEXT",
         "td_group": "TEXT",
         "matiere": "TEXT",
@@ -117,32 +136,33 @@ def import_ics_url(conn: sqlite3.Connection, url: str) -> int:
     response.raise_for_status()
 
     ics_text = response.text
-    calendar = Calendar(ics_text)
+    calendar = Calendar.from_ical(ics_text)
     meta = extract_meta_from_ics(ics_text)
     cur = conn.cursor()
 
     imported_count = 0
-    for event in calendar.events:
-        parsed = parse_description(event.description)
+    for event in calendar.walk("VEVENT"):
+        description = str(event.get("DESCRIPTION", ""))
+        parsed = parse_description(description)
         td_group = parsed["td"] or meta["td_group"]
+        dtstart_value = event.get("DTSTART").dt if event.get("DTSTART") else None
+        dtend_value = event.get("DTEND").dt if event.get("DTEND") else None
 
         cur.execute(
             """
             INSERT OR REPLACE INTO events (
                 uid, summary, dtstart, dtend, description, location,
-                calendar_name, source_url, formation, td_group,
+                formation, td_group,
                 matiere, enseignant, type_cours
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                event.uid,
-                event.name,
-                str(event.begin),
-                str(event.end),
-                event.description,
-                event.location,
-                meta["calendar_name"],
-                url,
+                str(event.get("UID", "")),
+                str(event.get("SUMMARY", "")),
+                to_local_datetime_text(dtstart_value),
+                to_local_datetime_text(dtend_value),
+                description,
+                str(event.get("LOCATION", "")),
                 meta["formation"],
                 td_group,
                 parsed["matiere"],
@@ -156,7 +176,21 @@ def import_ics_url(conn: sqlite3.Connection, url: str) -> int:
     return imported_count
 
 
+def recup_urls():
+    with open("liens.txt", "r", encoding="utf-8") as reader:
+        raw_lines = [line.strip() for line in reader if line.strip()]
+
+    urls = []
+    for line in raw_lines:
+        if line.startswith("http://") or line.startswith("https://"):
+            urls.append(line)
+
+    urls = list(dict.fromkeys(urls))
+    print(f"URLs récupérées: {len(urls)} URL(s) valides")
+    return urls
+
 def main() -> None:
+    URLS = recup_urls()
     conn = sqlite3.connect(DB_PATH)
     try:
         ensure_schema(conn)

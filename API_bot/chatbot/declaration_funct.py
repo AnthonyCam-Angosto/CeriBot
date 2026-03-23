@@ -1,5 +1,5 @@
 def declaration():
-    return [visualiser_planning_formation,recherche_salle_disponnible,meteo_du_jour]
+    return [visualiser_planning_formation,recherche_salle_disponnible,meteo_du_jour,emplacement_salle,transport_disponible]
 
 visualiser_planning_formation = {
     "name": "visualiser_planning_formation",
@@ -80,5 +80,32 @@ meteo_du_jour = {
     }
 }
 
+emplacement_salle={
+    "name":"emplacement_salle",
+    "description":"Affiche et indique l'emplacement d'une salle dans le bâtiment CERI.",
+    "parameters":{
+        "type":"object",
+        "properties":{
+            "salle":{
+                "type":"string",
+                "description":"Le nom de la salle dont on veut connaitre l'emplacement (ex: c130,C040,C120,C036, etc.) et il y aussi deux amphi qui sont ada et blaise"
+            }
+        },
+        "required":["salle"]
+    }
+}
 
-
+transport_disponible={
+    "name":"transport_disponible",
+    "description":"indique les transports disponibles qui parte du CERI a une destination donnée",
+    "parameters":{
+        "type":"object",
+        "properties":{
+            "destination":{
+                "type":"string",
+                "description":"la destination voulue"
+            }
+        },
+        "required":["destination"]
+    }
+}

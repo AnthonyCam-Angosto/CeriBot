@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=746, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Plan CERI</title>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -165,6 +166,15 @@
 
 <script>
 var currentLevel = 0;
+var socket = io();
+
+socket.on('change_page', function(data) {
+  if (data === 'reload') {
+    location.reload();
+  }
+});
+
+
 
 function showLevel(n) {
   currentLevel = n;
@@ -173,18 +183,37 @@ function showLevel(n) {
   document.getElementById('img0').style.display  = (n === 0) ? 'block' : 'none';
   document.getElementById('img1').style.display  = (n === 1) ? 'block' : 'none';
 
-  // Dots
-  //document.getElementById('dot0').style.display  = (n === 0) ? 'block' : 'none';
-  //document.getElementById('lbl0').style.display  = (n === 0) ? 'block' : 'none';
-  //document.getElementById('dot1').style.display  = (n === 1) ? 'block' : 'none';
-  //document.getElementById('lbl1').style.display  = (n === 1) ? 'block' : 'none';
-
   // Buttons
   var btns = document.getElementById('levelBtns').getElementsByClassName('lvlBtn');
   for (var i = 0; i < btns.length; i++) {
     btns[i].className = 'lvlBtn' + (i === n ? ' active' : '');
   }
 }
+
+function updateUserLocation(x, y) {
+  var mapWrap = document.getElementById('mapWrap');
+  var existingDot = mapWrap.querySelector('.youDot');
+  var existingLabel = mapWrap.querySelector('.youLabel');
+  
+  if (!existingDot) {
+    existingDot = document.createElement('div');
+    existingDot.className = 'youDot';
+    mapWrap.appendChild(existingDot);
+  }
+  
+  if (!existingLabel) {
+    existingLabel = document.createElement('div');
+    existingLabel.className = 'youLabel';
+    existingLabel.textContent = 'Vous êtes ici';
+    mapWrap.appendChild(existingLabel);
+  }
+  
+  existingDot.style.left = x + 'px';
+  existingDot.style.top = y + 'px';
+  existingLabel.style.left = (x - 30) + 'px';
+  existingLabel.style.top = (y - 40) + 'px';
+}
+
 </script>
 </body>
 </html>

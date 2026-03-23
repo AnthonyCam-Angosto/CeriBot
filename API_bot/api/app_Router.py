@@ -1,20 +1,38 @@
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, jsonify, render_template, request,Response
 import requests
+from flask_socketio import SocketIO
 
 from chatbot import chat
+from function_chat.emploi_temp import visualiser_planning_formation
 from speech.speech import speechRecognition
 
 app_Router = Blueprint('index',__name__)
+
+def init_socketio(socketio_instance):
+    global socketio
+    socketio = socketio_instance
 
 client=chat.start()
 chatbot=chat.create_chat(client)
 
 carte_verifier=False
+path_page="index.html"
 
 
 @app_Router.route("/")
 def page():
-    return render_template("plan.html")
+    global path_page
+    return render_template(path_page)
+
+
+def change_page(path):
+    global path_page
+    path_page=path
+    socketio.emit("change_page", "reload", to=None, skip_sid=None)
+
+def info_planning(date, filiere, type_formation, niveau_etudes, mode_etudes, groupe_td):
+    socketio.emit("info_planning", {"date": date, "filiere": filiere, "type_formation": type_formation, "niveau_etudes": niveau_etudes, "mode_etudes": mode_etudes, "groupe_td": groupe_td}, to=None, skip_sid=None)
+
 
 @app_Router.route("/chat", methods=['POST'])
 def chat():
@@ -33,6 +51,7 @@ def chat():
         #si l'utilisateur dit au revoir, on met fin à la conversation
         if requete=='au revoir':
             carte_verifier=False
+            change_page("evaluation.html")
             return jsonify({"reponse":reponse,"fin":True,"notverify":False})
     
         return jsonify({"reponse":reponse,"fin":False,"notverify":notverify})
@@ -72,3 +91,9 @@ def verify():
                 return jsonify({"valid": True})
     carte_verifier=False
     return jsonify({"valid": False})
+
+
+
+@app_Router.route("/planning", methods=["GET"])
+def planning(date, filiere, type_formation, niveau_etudes, mode_etudes, groupe_td):
+    return visualiser_planning_formation(date, filiere, type_formation, niveau_etudes, mode_etudes, groupe_td)
