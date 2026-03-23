@@ -7,7 +7,7 @@ from speech.speech import speechRecognition
 app_Router = Blueprint('index',__name__)
 
 client=chat.start()
-chatbot=chat.create_chat(client)
+#chatbot=chat.create_chat(client)
 
 carte_verifier=False
 
