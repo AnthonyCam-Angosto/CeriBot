@@ -38,9 +38,10 @@
     <context>
         <name>behavior_1/behavior.xar:/security/learn_face/Say</name>
         <message>
+            <location filename="behavior_1/behavior.xar" line="0"/>
             <source>erreur durant l'apprentissage du visage</source>
             <comment>Text</comment>
-            <translation type="obsolete">erreur durant l'apprentissage du visage</translation>
+            <translation type="unfinished">erreur durant l'apprentissage du visage</translation>
         </message>
     </context>
 </TS>
