@@ -14,7 +14,7 @@ carte_verifier=False
 
 @app_Router.route("/")
 def page():
-    return render_template("evaluation.html")
+    return render_template("plan.html")
 
 @app_Router.route("/chat", methods=['POST'])
 def chat():
