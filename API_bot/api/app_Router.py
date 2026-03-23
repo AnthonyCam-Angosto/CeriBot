@@ -16,7 +16,7 @@ client=chat.start()
 #chatbot=chat.create_chat(client)
 
 carte_verifier=False
-path_page="index.html"
+path_page="planning.html"
 
 
 @app_Router.route("/")

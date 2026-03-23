@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=746, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Emploi du temps</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #070f1e;
+    font-family: Arial, sans-serif;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+  }
+
+  #app {
+    width: 746px;
+    min-height: 1024px;
+    background: #0b1628;
+    -webkit-flex-shrink: 0;
+    flex-shrink: 0;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  #header {
+    background: linear-gradient(135deg, #0d2a4a 0%, #0a1e38 100%);
+    border-bottom: 3px solid #1c4a80;
+    padding: 12px 20px;
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-align: center; align-items: center;
+    -webkit-box-pack: justify; justify-content: space-between;
+  }
+  #header-left {}
+  #header h1 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #f5c518;
+    letter-spacing: 0.3px;
+  }
+  #header-date {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-top: 2px;
+  }
+  #header-sub {
+    font-size: 12px;
+    color: #5a8ab0;
+    margin-top: 2px;
+  }
+  #header-right {
+    text-align: right;
+  }
+  #header-formation {
+    font-size: 13px;
+    color: #4fa3e0;
+    font-weight: bold;
+  }
+  #header-groupe {
+    font-size: 12px;
+    color: #5a8ab0;
+    margin-top: 3px;
+  }
+  #header-count {
+    margin-top: 6px;
+    background: #1c4a80;
+    color: #a0d0ff;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: inline-block;
+  }
+
+  /* ── TIMELINE ── */
+  #timeline {
+    padding: 16px 20px 24px 20px;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+  }
+
+  /* ── COURS CARD ── */
+  .cours-card {
+    background: #0f2240;
+    border: 2px solid #1c4a80;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .cours-accent {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 6px;
+    border-radius: 12px 0 0 12px;
+  }
+  .accent-cm   { background: #f5c518; }
+  .accent-td   { background: #4fa3e0; }
+  .accent-tp   { background: #3ddc84; }
+  .accent-exam { background: #ff5555; }
+  .accent-other{ background: #a070d0; }
+
+  .cours-inner {
+    padding: 14px 16px 14px 20px;
+  }
+
+  /* Ligne du haut: heure + badge type */
+  .cours-top {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-align: center; align-items: center;
+    -webkit-box-pack: justify; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .cours-time {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+  }
+  .cours-time-sep { color: #5a8ab0; margin: 0 4px; font-size: 16px; }
+  .cours-time-end { font-size: 15px; color: #8aaddd; font-weight: normal; }
+  .cours-duration {
+    font-size: 11px;
+    color: #5a8ab0;
+    margin-left: 8px;
+  }
+
+  .type-badge {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .badge-cm   { background: rgba(245,197,24,0.15); color: #f5c518; border: 1px solid #f5c518; }
+  .badge-td   { background: rgba(79,163,224,0.15); color: #4fa3e0; border: 1px solid #4fa3e0; }
+  .badge-tp   { background: rgba(61,220,132,0.15); color: #3ddc84; border: 1px solid #3ddc84; }
+  .badge-exam { background: rgba(255,85,85,0.15);  color: #ff5555; border: 1px solid #ff5555; }
+  .badge-other{ background: rgba(160,112,208,0.15);color: #a070d0; border: 1px solid #a070d0; }
+
+  /* Matière */
+  .cours-matiere {
+    font-size: 17px;
+    font-weight: bold;
+    color: #e8f2ff;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  /* Infos: salle + enseignant */
+  .cours-infos {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    gap: 20px;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+  .info-item {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-align: center; align-items: center;
+    gap: 6px;
+  }
+  .info-icon {
+    font-size: 16px;
+    line-height: 1;
+  }
+  .info-text {
+    font-size: 14px;
+    color: #8aaddd;
+  }
+  .info-text strong {
+    color: #c8dff5;
+    font-weight: bold;
+  }
+
+  /* Groupes */
+  .cours-groupe {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #3a6a9a;
+    font-style: italic;
+  }
+
+  /* ── PAUSE entre cours ── */
+  .pause-block {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-align: center; align-items: center;
+    gap: 10px;
+    padding: 4px 0 4px 0;
+    margin-bottom: 16px;
+  }
+  .pause-line {
+    -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+    height: 1px;
+    background: #1c3a5a;
+  }
+  .pause-label {
+    font-size: 12px;
+    color: #2a5a7a;
+    white-space: nowrap;
+  }
+
+  /* ── VIDE ── */
+  #empty-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: #3a6a9a;
+    font-size: 16px;
+  }
+  #empty-msg .empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div id="header-left">
+      <div id="header-h1">&#x1F4C5; Emploi du temps</div>
+      <div id="header-date">—</div>
+      <div id="header-sub">Campus Jean-Henri Fabre — CERI</div>
+    </div>
+    <div id="header-right">
+      <div id="header-formation">—</div>
+      <div id="header-groupe">—</div>
+      <div id="header-count">0 cours</div>
+    </div>
+  </div>
+
+  <div id="timeline">
+    <div id="empty-msg">
+      <div class="empty-icon">&#x1F4CB;</div>
+      Chargement du planning...
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DONNÉES — Flask/Python
+// ═══════════════════════════════════════════════
+var PLANNING = {{ planning_json }};
+// En test statique, décommenter la ligne ci-dessous et commenter celle du dessus :
+ //var PLANNING = {"date":"2026-03-11","formation":"Master 1 - ilsen (classic)","groupe_td":"Gr1","results":[{"uid":"Cours-58769-37","start":"2026-03-11T10:00:00+00:00","end":"2026-03-11T13:00:00+00:00","title":"UCE WEB SERVICE ET API","type":"CM","memo":"","salle":"Amphi Ada","matiere":"UCE WEB SERVICE ET API","enseignant":"NABITZ Sophie","td_group":"M1-ILSEN-alt, M1-ILSEN-cla-Gr1, M1-ILSEN-cla-Gr2","formation":"M1 INGE DU LOGICIEL DE LA SOCIETE NUM (ILSEN)"},{"uid":"Cours-58422-37","start":"2026-03-11T16:00:00+00:00","end":"2026-03-11T17:30:00+00:00","title":"UCE ANGLAIS","type":"TD","memo":"","salle":"S7 = C 032","matiere":"UCE ANGLAIS (ORIENTÉ TECHNIQU)","enseignant":"RONDIN Lilian","td_group":"M1-ILSEN-cla-Gr1","formation":"M1 INGE DU LOGICIEL DE LA SOCIETE NUM (ILSEN)"}],"message":"2 cours trouvé(s)."};
+
+// ═══════════════════════════════════════════════
+
+var JOURS_FR = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi"];
+var MOIS_FR  = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+
+function formatDate(isoDate) {
+  var parts = isoDate.split("-");
+  var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+  return JOURS_FR[d.getDay()] + " " + d.getDate() + " " + MOIS_FR[d.getMonth()] + " " + d.getFullYear();
+}
+
+function formatHeure(isoDatetime) {
+  // "2026-03-11T09:00:00+00:00" → "09:00"
+  var t = isoDatetime.split("T")[1];
+  return t.substring(0, 5);
+}
+
+function dureeMinutes(start, end) {
+  var s = new Date(start);
+  var e = new Date(end);
+  return Math.round((e - s) / 60000);
+}
+
+function formatDuree(minutes) {
+  var h = Math.floor(minutes / 60);
+  var m = minutes % 60;
+  if (m === 0) return h + "h";
+  return h + "h" + (m < 10 ? "0" : "") + m;
+}
+
+function typeClass(type) {
+  var t = (type || "").toUpperCase();
+  if (t === "CM")   return "cm";
+  if (t === "TD")   return "td";
+  if (t === "TP")   return "tp";
+  if (t.indexOf("EXAM") !== -1) return "exam";
+  return "other";
+}
+
+function capMots(str) {
+  // Met en forme proprement: "UCE WEB SERVICE ET API" → garde majuscules mais limite longueur
+  if (!str) return "";
+  if (str.length > 52) return str.substring(0, 49) + "…";
+  return str;
+}
+
+function render(data) {
+  // Header
+  document.getElementById("header-date").textContent    = formatDate(data.date);
+  document.getElementById("header-formation").textContent = data.formation || "";
+  document.getElementById("header-groupe").textContent  = "Groupe : " + (data.groupe_td || "—");
+  var n = (data.results || []).length;
+  document.getElementById("header-count").textContent   = n + " cours trouvé" + (n > 1 ? "s" : "");
+
+  var container = document.getElementById("timeline");
+
+  if (!data.results || data.results.length === 0) {
+    container.innerHTML = '<div id="empty-msg"><div class="empty-icon">&#x1F4C5;</div>' +
+      (data.message || "Aucun cours pour cette journée.") + '</div>';
+    return;
+  }
+
+  var html = "";
+  var results = data.results;
+
+  for (var i = 0; i < results.length; i++) {
+    var c = results[i];
+    var tc = typeClass(c.type);
+    var heureDebut = formatHeure(c.start);
+    var heureFin   = formatHeure(c.end);
+    var duree      = dureeMinutes(c.start, c.end);
+
+    html += '<div class="cours-card">' +
+      '<div class="cours-accent accent-' + tc + '"></div>' +
+      '<div class="cours-inner">' +
+
+        // Heure + badge
+        '<div class="cours-top">' +
+          '<div>' +
+            '<span class="cours-time">' + heureDebut + '</span>' +
+            '<span class="cours-time-sep">→</span>' +
+            '<span class="cours-time-end">' + heureFin + '</span>' +
+            '<span class="cours-duration">(' + formatDuree(duree) + ')</span>' +
+          '</div>' +
+          '<span class="type-badge badge-' + tc + '">' + (c.type || "?") + '</span>' +
+        '</div>' +
+
+        // Matière
+        '<div class="cours-matiere">' + capMots(c.matiere || c.title) + '</div>' +
+
+        // Salle + Enseignant
+        '<div class="cours-infos">' +
+          '<div class="info-item">' +
+            '<span class="info-icon">&#x1F4CD;</span>' +
+            '<span class="info-text"><strong>' + (c.salle || "Salle ?") + '</strong></span>' +
+          '</div>' +
+          '<div class="info-item">' +
+            '<span class="info-icon">&#x1F464;</span>' +
+            '<span class="info-text">' + (c.enseignant || "—") + '</span>' +
+          '</div>' +
+        '</div>' +
+
+        // Groupes si plusieurs
+        (c.td_group && c.td_group.indexOf(",") !== -1 ?
+          '<div class="cours-groupe">Groupes : ' + c.td_group + '</div>' : '') +
+
+      '</div>' + // cours-inner
+    '</div>';   // cours-card
+  }
+
+  container.innerHTML = html;
+}
+
+// Lance le rendu
+render(PLANNING);
+</script>
+</body>
+</html>
