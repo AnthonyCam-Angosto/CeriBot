@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=746, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <title>Emploi du temps</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -43,7 +44,7 @@
     -webkit-box-align: center; align-items: center;
     -webkit-box-pack: justify; justify-content: space-between;
   }
-  #header-left {}
+
   #header h1 {
     font-size: 16px;
     font-weight: bold;
@@ -251,7 +252,71 @@
 // ═══════════════════════════════════════════════
 // DONNÉES — Flask/Python
 // ═══════════════════════════════════════════════
-var PLANNING = {{ planning_json }};
+var socket = io();
+
+socket.on('change_page', function(data) {
+  if (data === 'reload') {
+    location.reload();
+  }
+});
+
+var PLANNING;
+
+function createXHR() {
+  if (window.XMLHttpRequest) {
+    return new XMLHttpRequest();
+  }
+  try {
+    return new ActiveXObject("Microsoft.XMLHTTP");
+  } catch (e) {
+    return null;
+  }
+}
+
+function loadPlanningAjax(data) {
+  var xhr = createXHR();
+  if (!xhr) {
+    console.log("XHR non supporté");
+    return;
+  }
+
+  var url = "/planning?date=" + encodeURIComponent(data.date) +
+    "&filiere=" + encodeURIComponent(data.filiere) +
+    "&type_formation=" + encodeURIComponent(data.type_formation) +
+    "&niveau_etudes=" + encodeURIComponent(data.niveau_etudes) +
+    "&mode_etudes=" + encodeURIComponent(data.mode_etudes) +
+    "&groupe_td=" + encodeURIComponent(data.groupe_td);
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState !== 4) {
+      return;
+    }
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        if (window.JSON && window.JSON.parse) {
+          PLANNING = window.JSON.parse(xhr.responseText);
+        } else {
+          PLANNING = eval("(" + xhr.responseText + ")");
+        }
+        render(PLANNING);
+      } catch (err) {
+        console.log("Erreur parsing planning:", err);
+      }
+    } else {
+      console.log("Erreur AJAX planning:", xhr.status);
+    }
+  };
+
+  xhr.open("GET", url, true);
+  xhr.send(null);
+}
+
+socket.on('info_planning', function(data) {
+  console.log("Planning reçu:", data);
+  loadPlanningAjax(data);
+});
+
 // En test statique, décommenter la ligne ci-dessous et commenter celle du dessus :
  //var PLANNING = {"date":"2026-03-11","formation":"Master 1 - ilsen (classic)","groupe_td":"Gr1","results":[{"uid":"Cours-58769-37","start":"2026-03-11T10:00:00+00:00","end":"2026-03-11T13:00:00+00:00","title":"UCE WEB SERVICE ET API","type":"CM","memo":"","salle":"Amphi Ada","matiere":"UCE WEB SERVICE ET API","enseignant":"NABITZ Sophie","td_group":"M1-ILSEN-alt, M1-ILSEN-cla-Gr1, M1-ILSEN-cla-Gr2","formation":"M1 INGE DU LOGICIEL DE LA SOCIETE NUM (ILSEN)"},{"uid":"Cours-58422-37","start":"2026-03-11T16:00:00+00:00","end":"2026-03-11T17:30:00+00:00","title":"UCE ANGLAIS","type":"TD","memo":"","salle":"S7 = C 032","matiere":"UCE ANGLAIS (ORIENTÉ TECHNIQU)","enseignant":"RONDIN Lilian","td_group":"M1-ILSEN-cla-Gr1","formation":"M1 INGE DU LOGICIEL DE LA SOCIETE NUM (ILSEN)"}],"message":"2 cours trouvé(s)."};
 
@@ -267,9 +332,30 @@ function formatDate(isoDate) {
 }
 
 function formatHeure(isoDatetime) {
-  // "2026-03-11T09:00:00+00:00" → "09:00"
-  var t = isoDatetime.split("T")[1];
-  return t.substring(0, 5);
+  // Gère "2026-03-11T09:00:00+00:00" et "2026-03-11 09:00:00"
+  if (!isoDatetime) return "--:--";
+
+  var s = String(isoDatetime);
+  var t = "";
+
+  if (s.indexOf("T") !== -1) {
+    t = s.split("T")[1] || "";
+  } else if (s.indexOf(" ") !== -1) {
+    t = s.split(" ")[1] || "";
+  }
+
+  if (t && t.length >= 5) {
+    return t.substring(0, 5);
+  }
+
+  var d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    var h = d.getHours();
+    var m = d.getMinutes();
+    return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+  }
+
+  return "--:--";
 }
 
 function dureeMinutes(start, end) {
@@ -367,9 +453,6 @@ function render(data) {
 
   container.innerHTML = html;
 }
-
-// Lance le rendu
-render(PLANNING);
 </script>
 </body>
 </html>

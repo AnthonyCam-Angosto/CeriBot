@@ -170,4 +170,4 @@ def visualiser_planning_formation(date, filiere, type_formation, niveau_etudes, 
     }
 
 if __name__ == "__main__":
-    print(visualiser_planning_formation("11-03", "ilsen", "Master", "1", "classic", "Gr1"))
+    print(visualiser_planning_formation("10-04", "ia", "Master", "1", "classic", "Gr1"))

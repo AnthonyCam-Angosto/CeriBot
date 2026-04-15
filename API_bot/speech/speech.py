@@ -23,5 +23,12 @@ def speechRecognition(data, params):
     try:
         text = r.recognize_google(audioFile, language="fr-FR")
         return text
+    except sr.UnknownValueError:
+        print("Audio incompris par la reconnaissance vocale.")
+        return ""
+    except sr.RequestError as e:
+        print(f"Erreur du service de reconnaissance vocale: {e}")
+        return ""
     except Exception as e:
-        print (e)
+        print(e)
+        return ""

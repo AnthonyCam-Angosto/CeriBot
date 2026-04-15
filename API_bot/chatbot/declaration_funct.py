@@ -1,5 +1,5 @@
 def declaration():
-    return [visualiser_planning_formation,recherche_salle_disponnible,meteo_du_jour,emplacement_salle,transport_disponible]
+    return [visualiser_planning_formation,recherche_salle_disponnible,meteo_du_jour,emplacement_salle]
 
 visualiser_planning_formation = {
     "name": "visualiser_planning_formation",

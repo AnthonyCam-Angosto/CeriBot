@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, render_template, request,Response
 import requests
 from flask_socketio import SocketIO
 
-from chatbot import chat
+from chatbot import chat as chat_service
 from function_chat.emploi_temp import visualiser_planning_formation
 from speech.speech import speechRecognition
 
@@ -12,11 +12,11 @@ def init_socketio(socketio_instance):
     global socketio
     socketio = socketio_instance
 
-client=chat.start()
-#chatbot=chat.create_chat(client)
+client=chat_service.start()
+chatbot=chat_service.create_chat(client)
 
 carte_verifier=False
-path_page="planning.html"
+path_page="index.html"
 
 
 @app_Router.route("/")
@@ -31,11 +31,18 @@ def change_page(path):
     socketio.emit("change_page", "reload", to=None, skip_sid=None)
 
 def info_planning(date, filiere, type_formation, niveau_etudes, mode_etudes, groupe_td):
+    path_page="planning.html"
     socketio.emit("info_planning", {"date": date, "filiere": filiere, "type_formation": type_formation, "niveau_etudes": niveau_etudes, "mode_etudes": mode_etudes, "groupe_td": groupe_td}, to=None, skip_sid=None)
 
 
+@app_Router.route("/test_planning", methods=['GET'])
+def test_planning():
+    info_planning("11-03", "ilsen", "Master", "1", "classic", "Gr1")
+    return Response(status=200)
+
+
 @app_Router.route("/chat", methods=['POST'])
-def chat():
+def chat_route():
     '''
     Route pour gérer les requêtes du chatbot. Elle reçoit une requête JSON contenant une "requete" de l'utilisateur, 
     traite cette requête en utilisant le module chatbot, et retourne une réponse JSON contenant la réponse du chatbot.
@@ -46,10 +53,10 @@ def chat():
     if(values.__contains__("requete")):
         requete=values["requete"]
 
-        reponse,notverify=chat.run(chatbot,requete,carte_verifier)
+        reponse,notverify=chat_service.run(chatbot,requete,carte_verifier)
 
         #si l'utilisateur dit au revoir, on met fin à la conversation
-        if requete=='au revoir':
+        if requete.lower().find('au revoir') != -1:
             carte_verifier=False
             change_page("evaluation.html")
             return jsonify({"reponse":reponse,"fin":True,"notverify":False})
@@ -67,8 +74,8 @@ def transcribe():
 
     #recupere la transcription de google speech recognition
     result_from_google = speechRecognition(req_data['data'], req_data['params'])
-    print(result_from_google)
     reply = {"sentence": result_from_google}
+    print(f"Transcription obtenue: {result_from_google}")
     return jsonify(reply)
 
 
@@ -95,5 +102,20 @@ def verify():
 
 
 @app_Router.route("/planning", methods=["GET"])
-def planning(date, filiere, type_formation, niveau_etudes, mode_etudes, groupe_td):
-    return visualiser_planning_formation(date, filiere, type_formation, niveau_etudes, mode_etudes, groupe_td)
+def planning():
+    date = request.args.get("date", "")
+    filiere = request.args.get("filiere", "")
+    type_formation = request.args.get("type_formation", "")
+    niveau_etudes = request.args.get("niveau_etudes", "")
+    mode_etudes = request.args.get("mode_etudes", "")
+    groupe_td = request.args.get("groupe_td", request.args.get("groupe td", ""))
+
+    result = visualiser_planning_formation(
+        date,
+        filiere,
+        type_formation,
+        niveau_etudes,
+        mode_etudes,
+        groupe_td,
+    )
+    return jsonify(result)
