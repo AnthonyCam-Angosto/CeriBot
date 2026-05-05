@@ -25,6 +25,11 @@ def page():
     return render_template(path_page)
 
 
+@app_Router.route("/simulator")
+def simulator():
+    return render_template("simulator.html")
+
+
 def change_page(path):
     global path_page
     path_page=path

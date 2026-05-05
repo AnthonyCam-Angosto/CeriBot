@@ -21,7 +21,7 @@
         <name>behavior_1/behavior.xar:/security/learn_face/Say</name>
         <message>
             <location filename="behavior_1/behavior.xar" line="0"/>
-            <source>erreur durant l'apprentissage du visage</source>
+            <source>erreur durant l'apprentissage du visage mais carte valide</source>
             <comment>Text</comment>
             <translation type="unfinished"></translation>
         </message>

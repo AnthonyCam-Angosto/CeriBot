@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CERI_Bot - Simulateur</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .container {
+            width: min(1120px, 100%);
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            padding: 18px;
+            overflow: hidden;
+        }
+
+        .robot-section {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .robot-frame {
+            width: 1024px;
+            height: 746px;
+            border: none;
+            display: block;
+        }
+
+        .chat-section {
+            width: 100%;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+            padding: 18px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .chat-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .chat-header h2 {
+            color: #333;
+            font-size: 20px;
+        }
+
+        .chat-messages {
+            flex: 1 1 420px;
+            min-height: 320px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            display: flex;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.user .message-content {
+            background-color: #007bff;
+            color: white;
+            border-bottom-right-radius: 0;
+        }
+
+        .message.bot .message-content {
+            background-color: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 0;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+            padding: 0 5px;
+        }
+
+        .chat-input-section {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .chat-input {
+            flex: 1 1 360px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: none;
+            font-family: Arial, sans-serif;
+            max-height: 100px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+
+        .send-btn {
+            padding: 12px 30px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+
+        .send-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .send-btn:active {
+            transform: scale(0.98);
+        }
+
+        .send-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .clear-btn {
+            padding: 12px 20px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .clear-btn:hover {
+            background-color: #545b62;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 100%;
+                padding: 12px;
+            }
+
+            .robot-section {
+                justify-content: flex-start;
+            }
+
+            .robot-frame {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1024 / 746;
+            }
+
+            .chat-section {
+                min-height: 360px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Section Robot - Affiche la page "/" -->
+        <div class="robot-section">
+            <iframe class="robot-frame" id="robot-frame" src="/"></iframe>
+        </div>
+
+        <!-- Section Chat - Simulation de la discussion -->
+        <div class="chat-section">
+            <div class="chat-header">
+                <h2>💬 Discussion avec CERI_Bot</h2>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot">
+                    <div>
+                        <div class="message-content">
+                            Bienvenue! Je suis CERI_Bot. Comment puis-je vous aider aujourd'hui?
+                        </div>
+                        <div class="message-time" id="bot-time-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-section">
+                <textarea 
+                    class="chat-input" 
+                    id="user-input" 
+                    placeholder="Entrez votre message ici..."
+                    rows="1"
+                ></textarea>
+                <button class="send-btn" id="send-btn" onclick="sendMessage()">Envoyer</button>
+                <button class="clear-btn" id="clear-btn" onclick="clearChat()">Effacer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let messageCount = 1;
+
+        function reloadRobotFrame() {
+            const robotFrame = document.getElementById('robot-frame');
+            if (!robotFrame) {
+                return;
+            }
+
+            robotFrame.src = '/?t=' + Date.now();
+        }
+
+        // Fonction pour obtenir l'heure actuelle formatée
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        // Fonction pour ajouter un message à la discussion
+        function addMessage(text, isUser) {
+            const chatMessages = document.getElementById('chat-messages');
+            messageCount++;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const messageContentDiv = document.createElement('div');
+            messageContentDiv.className = 'message-content';
+            messageContentDiv.textContent = text;
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = getCurrentTime();
+            
+            messageDiv.appendChild(messageContentDiv);
+            messageDiv.appendChild(timeDiv);
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll vers le bas
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Fonction pour envoyer un message
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+
+            if (message === '') {
+                return;
+            }
+
+            // Afficher le message utilisateur
+            addMessage(message, true);
+
+            // Envoyer au serveur
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ requete: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Afficher la réponse du bot
+                if (data.reponse) {
+                    addMessage(data.reponse, false);
+                } else if (data.message) {
+                    addMessage(data.message, false);
+                } else {
+                    addMessage("Désolé, je n'ai pas pu traiter votre demande.", false);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                addMessage("Une erreur s'est produite. Veuillez réessayer.", false);
+            });
+
+            // Vider l'input
+            input.value = '';
+            input.style.height = 'auto';
+        }
+
+        // Fonction pour effacer la discussion
+        function clearChat() {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = '<div class="message bot"><div><div class="message-content">Bienvenue! Je suis CERI_Bot. Comment puis-je vous aider aujourd\'hui?</div><div class="message-time"></div></div></div>';
+            messageCount = 1;
+            document.getElementById('user-input').value = '';
+        }
+
+        // Permettre l'envoi avec Entrée
+        document.getElementById('user-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-redimensionner la textarea
+        document.getElementById('user-input').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+
+        // Écouter les changements de page
+        socket.on('change_page', function(data) {
+            if (data === 'reload') {
+                reloadRobotFrame();
+            }
+        });
+    </script>
+</body>
+</html>

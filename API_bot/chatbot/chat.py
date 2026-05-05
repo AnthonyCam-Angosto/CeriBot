@@ -5,8 +5,13 @@ from chatbot.declaration_funct import declaration
 from function_chat import emplacement_salle, emploi_temp, meteo, salle_dispo
 import re
 import time
+import os
+from dotenv import load_dotenv
 
-FONCTION_SECURISER = {"recherche_salle_disponnible", "visualiser_planning_formation", "emplacement_salle"}
+# Charger les variables d'environnement depuis le fichier .env
+load_dotenv()
+
+FONCTION_SECURISER = {"recherche_salle_disponnible", "visualiser_planning_formation"}
 MAX_RETRIES = 3
 RETRY_DELAY = 2  # secondes
 AVAILABLE_MODELS = [
@@ -18,13 +23,12 @@ AVAILABLE_MODELS = [
 ]
 MOTS_CLES_SECURISES = (
     "planning",
-    "salle",
     "emploi du temps",
     "emploi_temp",
 )
 SECURITY_BLOCK_MESSAGE = (
     "La carte etudiante n'est pas verifiee. "
-    "Je ne peux pas utiliser les fonctions liees a l'ecole pour le moment."
+    "Je ne peux pas utiliser les fonctions lieesc a l'ecole pour le moment."
 )
 
 _CLIENT = None
@@ -122,7 +126,10 @@ def _switch_chatbot() -> bool:
 
 def start():
     global _CLIENT
-    client = genai.Client(api_key="AIzaSyBJB3W8xOQL7umAXOq61dvzJ9436rqPWHI")
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY non trouvée dans les variables d'environnement. Vérifiez le fichier .env")
+    client = genai.Client(api_key=api_key)
     _CLIENT = client
     return client
 
