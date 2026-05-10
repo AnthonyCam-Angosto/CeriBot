@@ -11,7 +11,8 @@ from dotenv import load_dotenv
 # Charger les variables d'environnement depuis le fichier .env
 load_dotenv()
 
-FONCTION_SECURISER = {"recherche_salle_disponnible", "visualiser_planning_formation"}
+#FONCTION_SECURISER = {"recherche_salle_disponnible", "visualiser_planning_formation"}
+FONCTION_SECURISER = {}
 MAX_RETRIES = 3
 RETRY_DELAY = 2  # secondes
 AVAILABLE_MODELS = [
@@ -21,10 +22,11 @@ AVAILABLE_MODELS = [
     "gemini-2.0-flash-lite",
     "gemini-2.0-flash"
 ]
+
 MOTS_CLES_SECURISES = (
-    "planning",
-    "emploi du temps",
-    "emploi_temp",
+#    "planning",
+#    "emploi du temps",
+#    "emploi_temp",
 )
 SECURITY_BLOCK_MESSAGE = (
     "La carte etudiante n'est pas verifiee. "
@@ -35,7 +37,7 @@ _CLIENT = None
 _ACTIVE_CHAT = None
 _ACTIVE_MODEL_INDEX = 0
 SYSTEM_INSTRUCTION = (
-    "Tu es un robot d'accueil universitaire. "
+    "Tu es un robot d'accueil universitaire pour l'université d'Avignon dnas le departement d'informatique. "
     "Quand une des fonctions disponibles permet de répondre à la demande, "
     "utilise un function call au lieu d'inventer la réponse en texte libre. "
     "Après le résultat de fonction, réponds avec une seule phrase courte."

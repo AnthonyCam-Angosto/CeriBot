@@ -49,4 +49,18 @@
             <translation type="unfinished">erreur durant l'apprentissage du visage mais carte valide</translation>
         </message>
     </context>
+    <context>
+        <name>behavior_1/behavior.xar:/security/verif carte/Say</name>
+        <message>
+            <source>Hello</source>
+            <comment>Text</comment>
+            <translation type="vanished">Hello</translation>
+        </message>
+        <message>
+            <location filename="behavior_1/behavior.xar" line="0"/>
+            <source>montrer votre carte</source>
+            <comment>Text</comment>
+            <translation type="unfinished">montrer votre carte</translation>
+        </message>
+    </context>
 </TS>

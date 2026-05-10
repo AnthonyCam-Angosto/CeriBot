@@ -280,12 +280,7 @@ function loadPlanningAjax(data) {
     return;
   }
 
-  var url = "/planning?date=" + encodeURIComponent(data.date) +
-    "&filiere=" + encodeURIComponent(data.filiere) +
-    "&type_formation=" + encodeURIComponent(data.type_formation) +
-    "&niveau_etudes=" + encodeURIComponent(data.niveau_etudes) +
-    "&mode_etudes=" + encodeURIComponent(data.mode_etudes) +
-    "&groupe_td=" + encodeURIComponent(data.groupe_td);
+  var url = "/planning";
 
   xhr.onreadystatechange = function() {
     if (xhr.readyState !== 4) {
@@ -316,6 +311,8 @@ socket.on('info_planning', function(data) {
   console.log("Planning reçu:", data);
   loadPlanningAjax(data);
 });
+
+loadPlanningAjax();
 
 // En test statique, décommenter la ligne ci-dessous et commenter celle du dessus :
  //var PLANNING = {"date":"2026-03-11","formation":"Master 1 - ilsen (classic)","groupe_td":"Gr1","results":[{"uid":"Cours-58769-37","start":"2026-03-11T10:00:00+00:00","end":"2026-03-11T13:00:00+00:00","title":"UCE WEB SERVICE ET API","type":"CM","memo":"","salle":"Amphi Ada","matiere":"UCE WEB SERVICE ET API","enseignant":"NABITZ Sophie","td_group":"M1-ILSEN-alt, M1-ILSEN-cla-Gr1, M1-ILSEN-cla-Gr2","formation":"M1 INGE DU LOGICIEL DE LA SOCIETE NUM (ILSEN)"},{"uid":"Cours-58422-37","start":"2026-03-11T16:00:00+00:00","end":"2026-03-11T17:30:00+00:00","title":"UCE ANGLAIS","type":"TD","memo":"","salle":"S7 = C 032","matiere":"UCE ANGLAIS (ORIENTÉ TECHNIQU)","enseignant":"RONDIN Lilian","td_group":"M1-ILSEN-cla-Gr1","formation":"M1 INGE DU LOGICIEL DE LA SOCIETE NUM (ILSEN)"}],"message":"2 cours trouvé(s)."};

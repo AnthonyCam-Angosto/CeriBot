@@ -7,6 +7,7 @@ from function_chat.emploi_temp import visualiser_planning_formation
 from speech.speech import speechRecognition
 
 app_Router = Blueprint('index',__name__)
+default_planning_info = None
 
 def init_socketio(socketio_instance):
     global socketio
@@ -36,13 +37,16 @@ def change_page(path):
     socketio.emit("change_page", "reload", to=None, skip_sid=None)
 
 def info_planning(date, filiere, type_formation, niveau_etudes, mode_etudes, groupe_td):
-    path_page="planning.html"
-    socketio.emit("info_planning", {"date": date, "filiere": filiere, "type_formation": type_formation, "niveau_etudes": niveau_etudes, "mode_etudes": mode_etudes, "groupe_td": groupe_td}, to=None, skip_sid=None)
+    global default_planning_info
+    default_planning_info = {"date": date, "filiere": filiere, "type_formation": type_formation, "niveau_etudes": niveau_etudes, "mode_etudes": mode_etudes, "groupe_td": groupe_td}
+    change_page("planning.html")
+    print(f"Emitting planning info: date={date}, filiere={filiere}, type_formation={type_formation}, niveau_etudes={niveau_etudes}, mode_etudes={mode_etudes}, groupe_td={groupe_td}")
+    socketio.emit("info_planning", default_planning_info, to=None, skip_sid=None)
 
 
 @app_Router.route("/test_planning", methods=['GET'])
 def test_planning():
-    info_planning("11-03", "ilsen", "Master", "1", "classic", "Gr1")
+    info_planning("6-05", "informatique", "licence", "1", None, None)
     return Response(status=200)
 
 
@@ -108,19 +112,17 @@ def verify():
 
 @app_Router.route("/planning", methods=["GET"])
 def planning():
-    date = request.args.get("date", "")
-    filiere = request.args.get("filiere", "")
-    type_formation = request.args.get("type_formation", "")
-    niveau_etudes = request.args.get("niveau_etudes", "")
-    mode_etudes = request.args.get("mode_etudes", "")
-    groupe_td = request.args.get("groupe_td", request.args.get("groupe td", ""))
+    global default_planning_info
+    if default_planning_info is None:
+        return jsonify({"error": "No planning info provided"}), 400
 
     result = visualiser_planning_formation(
-        date,
-        filiere,
-        type_formation,
-        niveau_etudes,
-        mode_etudes,
-        groupe_td,
+        default_planning_info["date"],
+        default_planning_info["filiere"],
+        default_planning_info["type_formation"],
+        default_planning_info["niveau_etudes"],
+        default_planning_info["mode_etudes"],
+        default_planning_info["groupe_td"],
     )
+    print(f"Résultat du planning: {result}")
     return jsonify(result)
